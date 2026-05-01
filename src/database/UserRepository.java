@@ -53,6 +53,19 @@ public class UserRepository {
         return null;
     }
 
+    public boolean delete(String username){
+        String sql = "delete from users where username = ?";
+        try(Connection cn = DBConnection.getInstance().getConnection()){
+            PreparedStatement ps = cn.prepareStatement(sql);
+            ps.setString(1,username);
+
+            ResultSet resultSet = ps.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private User findById(Long id){
         String sql = "select * from users where id = ?";
         try(Connection connection = DBConnection.getInstance().getConnection()) {

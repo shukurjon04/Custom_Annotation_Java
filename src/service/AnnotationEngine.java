@@ -1,15 +1,21 @@
 package service;
 
+import annotations.Pattern;
+import annotations.Validate;
 import annotations.username;
 import database.UserRepository;
+import model.Check;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.List;
 
 
 public class AnnotationEngine {
 
     UserRepository userRepository = new UserRepository();
-    public void run(Object obj){
+    final Check chech = new Check();
+    public Check run(Object obj){
         Class<?> clazz = obj.getClass();
         for (Field field : clazz.getDeclaredFields()){
             if (field.isAnnotationPresent(username.class)){
@@ -21,27 +27,38 @@ public class AnnotationEngine {
 
                     if (value == null || value.isBlank()) {
                         System.out.println(username.msg());
-                        continue;
                     }
-
-                    // length check
-                    if (value.length() < username.min()) {
+                    else if (value.length() < username.min()) {
                         System.out.println("username juda qisqa");
-                        return;
                     }
-
-                    if (value.length() > username.max()) {
-                        System.out.println("username juda uzun");
-                        return;
-                    }
-
-                    if (userRepository.existsUserName(value)) {
+                    else if (userRepository.existsUserName(value)) {
                         System.out.println("Bu username allaqachon mavjud!");
-                        return;
+                    }
+                    else {
+                        chech.setUserName(true);
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
+            }
+            if (field.isAnnotationPresent(Validate.class)) {
+                field.setAccessible(true);
+                Validate annotation = field.getAnnotation(Validate.class);
+                String vlaue;
+                try {
+                    vlaue = field.get(obj).toString();
+                    if (vlaue.length()> annotation.min()){
+                        chech.setPassword(true);
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (field.isAnnotationPresent(Pattern.class)){
+                field.setAccessible(true);
+                Pattern annotation = field.getAnnotation(Pattern.class);
+                List.of(field.getAnnotations()).forEach();
+
             }
         }
         System.out.println("Hush  kelibsz");
