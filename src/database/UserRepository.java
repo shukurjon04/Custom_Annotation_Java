@@ -2,10 +2,7 @@ package database;
 
 import model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class UserRepository {
 
@@ -36,16 +33,19 @@ public class UserRepository {
                 )
                 """;
         try (Connection connection = DBConnection.getInstance().getConnection()) {
-           PreparedStatement ps = connection.prepareStatement(sql);
+           PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
            ps.setString(1, user.getUsername());
            ps.setString(2, user.getEmail());
            ps.setString(3, user.getPassword());
            ps.setString(4, user.getPhone());
 
            int result = ps.executeUpdate();
-           ResultSet resultSet = ps.getGeneratedKeys();
            if (result>0){
-               return findById(resultSet.getLong(1));
+               ResultSet resultSet = ps.getGeneratedKeys();
+
+               if (resultSet.next()){
+                   return findById(resultSet.getLong(1));
+               }
            }
         } catch (SQLException e) {
             throw new RuntimeException(e);

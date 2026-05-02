@@ -15,7 +15,7 @@ public class AnnotationEngine {
 
     UserRepository userRepository = new UserRepository();
     final Check chech = new Check();
-    public Check run(Object obj){
+    public Check run(Object obj) throws IllegalAccessException {
         Class<?> clazz = obj.getClass();
         for (Field field : clazz.getDeclaredFields()){
             if (field.isAnnotationPresent(username.class)){
@@ -57,11 +57,26 @@ public class AnnotationEngine {
             if (field.isAnnotationPresent(Pattern.class)){
                 field.setAccessible(true);
                 Pattern annotation = field.getAnnotation(Pattern.class);
-                List.of(field.getAnnotations()).forEach();
+                String regex = annotation.regexp();
+                String message = annotation.msg();
+
+                var value = field.get(obj);
+
+                if (value!=null){
+                    String str = value.toString();
+                    if (!str.matches(regex)){
+                        System.out.println(field.getName()+" xato "+message);
+                        chech.setEmail(false);
+                        chech.setPhone(false);
+                    }else{
+                        chech.setEmail(true);
+                        chech.setPhone(true);
+                    }
+                }
 
             }
         }
-        System.out.println("Hush  kelibsz");
+        return chech;
             
     }
     
